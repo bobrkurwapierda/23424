@@ -1,0 +1,74 @@
+class Logger:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Logger, cls).__new__(cls)
+            cls._instance.logs = []
+        return cls._instance
+
+    def log(self, message):
+        self.logs.append(message)
+        print(message)
+
+
+class BankAccount:
+    def __init__(self, accountNumber, balance=0):
+        self.accountNumber = accountNumber
+        self.balance = balance
+        self.logger = Logger()
+
+        self.logger.log(
+            f"Створено рахунок №{self.accountNumber} з балансом {self.balance}"
+        )
+
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Сума поповнення має бути більшою за 0")
+
+        self.balance += amount
+
+        self.logger.log(
+            f"Рахунок №{self.accountNumber}: поповнення на {amount}. "
+            f"Поточний баланс: {self.balance}"
+        )
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Сума зняття має бути більшою за 0")
+
+        if amount > self.balance:
+            self.logger.log(
+                f"Рахунок №{self.accountNumber}: спроба зняття {amount}. "
+                f"Недостатньо коштів. Баланс: {self.balance}"
+            )
+            raise ValueError("Запитана сума перевищує баланс")
+
+        self.balance -= amount
+
+        self.logger.log(
+            f"Рахунок №{self.accountNumber}: зняття {amount}. "
+            f"Поточний баланс: {self.balance}"
+        )
+
+
+def main():
+    account = BankAccount("UA123456", 1000)
+
+    account.deposit(500)
+    account.withdraw(300)
+
+    try:
+        account.withdraw(2000)
+    except ValueError as error:
+        print(f"Помилка: {error}")
+
+    print("\nІсторія транзакцій:")
+    logger = Logger()
+
+    for log in logger.logs:
+        print(log)
+
+
+if __name__ == "__main__":
+    main()
